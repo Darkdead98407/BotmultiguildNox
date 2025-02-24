@@ -49,7 +49,7 @@ module.exports = {
                 try {
                     // Update economy in database
                     await pool.query(
-                        'UPDATE discord_economy SET noxcoins = noxcoins + $1 WHERE discord_id = $2',
+                        'UPDATE discord_economy SET noxcoins = noxcoins + ? WHERE discord_id = ?',
                         [reward, message.author.id]
                     );
 

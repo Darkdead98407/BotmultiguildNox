@@ -33,7 +33,7 @@ module.exports = {
 
     await interaction.reply({ content: `El rol **${role.name}** ha sido agregado como **${type}**.`, ephemeral: true });
   }
-};const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+};
 const pool = require('../../database/db');
 
 module.exports = {

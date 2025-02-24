@@ -7,6 +7,9 @@ async function loadEvents(client) {
 
     // Limpiar todos los eventos existentes
     const events = client.eventNames();
+    console.log('🔄 Eventos actuales antes de limpiar:', events);
+    console.log('📊 Cantidad de listeners messageCreate antes de limpiar:', client.listenerCount('messageCreate'));
+
     for (const event of events) {
         client.removeAllListeners(event);
     }
@@ -24,6 +27,10 @@ async function loadEvents(client) {
 
         try {
             const event = require(filePath);
+            console.log(`🔍 Intentando cargar evento desde ${file}:`, {
+                eventName: event.name,
+                filePath: filePath
+            });
 
             // Verificar si el evento ya está registrado
             if (loadedEvents.has(event.name)) {
@@ -39,12 +46,19 @@ async function loadEvents(client) {
 
             loadedEvents.add(event.name);
             console.log(`✅ Evento cargado: ${event.name} desde ${file}`);
+
+            // Log específico para messageCreate
+            if (event.name === 'messageCreate') {
+                console.log(`📝 messageCreate registrado desde ${file}`);
+            }
         } catch (error) {
             console.error(`❌ Error al cargar evento desde ${file}:`, error);
         }
     }
 
-    console.log(`📊 Total de eventos cargados: ${loadedEvents.size}`);
+    console.log('📊 Total de eventos cargados:', loadedEvents.size);
+    console.log('📊 Cantidad de listeners messageCreate después de cargar:', client.listenerCount('messageCreate'));
+    console.log('📝 Lista de eventos cargados:', Array.from(loadedEvents));
 }
 
 module.exports = { loadEvents };
