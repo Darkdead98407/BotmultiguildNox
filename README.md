@@ -22,26 +22,32 @@ Bot de Discord avanzado con panel de control web flexible, almacenamiento de con
 - Express.js
 - EJS templating
 - JSON file-based storage
+- OAuth2 Discord Authentication
 
 ## Configuración
 
-1. Clona el repositorio
-```bash
-git clone [URL-del-repositorio]
+1. Configura tu aplicación en el Portal de Desarrolladores de Discord:
+   - Ve a https://discord.com/developers/applications
+   - Crea una nueva aplicación o selecciona una existente
+   - En la sección OAuth2 > General:
+     - Añade tu URL de redirección (ejemplo: `https://tu-dominio.com/auth/discord/callback`)
+     - Guarda los cambios
+   - Copia el CLIENT ID y CLIENT SECRET
+
+2. Configura las variables de entorno en un archivo `.env`:
+```env
+DISCORD_BOT_TOKEN=tu_token_aquí
+BOT_CLIENT_ID=tu_client_id_aquí
+DISCORD_CLIENT_SECRET=tu_client_secret_aquí
+OAUTH_CALLBACK_URL=/auth/discord/callback
 ```
 
-2. Instala las dependencias
+3. Instala las dependencias:
 ```bash
 npm install
 ```
 
-3. Configura las variables de entorno en un archivo `.env`:
-```env
-DISCORD_BOT_TOKEN=tu_token_aquí
-BOT_CLIENT_ID=tu_client_id_aquí
-```
-
-4. Inicia el bot
+4. Inicia el bot:
 ```bash
 node src/index.js
 ```

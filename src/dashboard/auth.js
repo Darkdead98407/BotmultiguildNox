@@ -4,7 +4,7 @@ const { loadData, saveData } = require('../utils/fileStorage');
 
 const DISCORD_CLIENT_ID = process.env.BOT_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const CALLBACK_URL = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/auth/discord/callback`;
+const CALLBACK_URL = process.env.OAUTH_CALLBACK_URL || `/auth/discord/callback`;
 
 function setupAuth(app) {
     // Configuración de Passport
