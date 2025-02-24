@@ -3,6 +3,8 @@ const config = require('../config.json');
 const { loadCommands } = require('./handlers/commandHandler');
 const { loadEvents } = require('./handlers/eventHandler');
 const { join } = require('path');
+const { deployCommands } = require('./deploy-commands');
+const { setupDashboard } = require('./dashboard/server');
 
 const client = new Client({
     intents: [
@@ -55,7 +57,13 @@ client.config = {
         console.log(`🔍 Cantidad de listeners para messageCreate después de iniciar: ${client.listenerCount('messageCreate')}`);
 
         // Ejecutar deploy-commands.js para registrar comandos slash
-        require('./deploy-commands.js');
+        console.log('🔄 Iniciando registro de comandos slash...');
+        await deployCommands();
+        console.log('✅ Registro de comandos slash completado');
+
+        // Iniciar panel de control web
+        setupDashboard(client);
+
     } catch (error) {
         console.error('Error al inicializar el bot:', error);
     }

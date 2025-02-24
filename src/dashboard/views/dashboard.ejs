@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Panel de Control</h1>
+            <a href="/" class="text-white hover:text-gray-200">Volver al Inicio</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 p-4">
+        <h2 class="text-2xl font-bold mb-6">Servidores Disponibles</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% guilds.forEach(guild => { %>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center space-x-4">
+                        <% if (guild.icon) { %>
+                            <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" 
+                                 alt="<%= guild.name %>" 
+                                 class="w-16 h-16 rounded-full">
+                        <% } else { %>
+                            <div class="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-600">
+                                    <%= guild.name.charAt(0) %>
+                                </span>
+                            </div>
+                        <% } %>
+                        <div>
+                            <h3 class="text-xl font-semibold"><%= guild.name %></h3>
+                            <p class="text-gray-600"><%= guild.memberCount %> miembros</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        <a href="/dashboard/guild/<%= guild.id %>/settings" 
+                           class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                            Configurar
+                        </a>
+                        <a href="/dashboard/guild/<%= guild.id %>/commands" 
+                           class="block w-full text-center border border-blue-500 text-blue-500 hover:bg-blue-50 font-semibold py-2 px-4 rounded">
+                            Comandos
+                        </a>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-8 py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Panel de Control</p>
+        </div>
+    </footer>
+</body>
+</html>

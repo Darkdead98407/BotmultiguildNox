@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Bot Discord</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold"><%= botName %> - Panel de Control</h1>
+            <div>
+                <a href="/auth/discord" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Iniciar Sesión con Discord
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Estadísticas -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Estadísticas</h2>
+                <div class="space-y-2">
+                    <p>Servidores: <%= guilds %></p>
+                    <p>Usuarios: <%= users %></p>
+                </div>
+            </div>
+
+            <!-- Enlaces Rápidos -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Enlaces Rápidos</h2>
+                <div class="space-y-2">
+                    <a href="/dashboard" class="block text-blue-600 hover:text-blue-800">Panel Principal</a>
+                    <a href="/commands" class="block text-blue-600 hover:text-blue-800">Gestionar Comandos</a>
+                    <a href="/settings" class="block text-blue-600 hover:text-blue-800">Configuración</a>
+                </div>
+            </div>
+
+            <!-- Estado del Bot -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Estado del Bot</h2>
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>En línea</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-8 py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 <%= botName %> - Panel de Control</p>
+        </div>
+    </footer>
+</body>
+</html>
