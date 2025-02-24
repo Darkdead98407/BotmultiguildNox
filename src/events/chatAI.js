@@ -1,11 +1,8 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const config = require("../config.json");
-const fs = require('fs');
+const config = require("../../config.json");
+const fs = require('fs').promises;
 const path = require('path');
-const util = require('util');
 const { getGuildConfig } = require("../utils/guildDataManager");
-
-const readFileAsync = util.promisify(fs.readFile);
 
 module.exports = {
     name: "messageCreate",
@@ -14,7 +11,9 @@ module.exports = {
         if (message.author.bot) return;
 
         // Obtener la configuración del servidor
-        const guildId = message.guild.id;
+        const guildId = message.guild?.id;
+        if (!guildId) return;
+
         const guildConfig = await getGuildConfig(guildId);
 
         // Verificar si el sistema de Chat IA está activado en el servidor
@@ -34,7 +33,7 @@ module.exports = {
 
             // Leer el archivo de personalidad
             const personalityFilePath = path.join(__dirname, "../data/personality.txt");
-            const personalityContent = await readFileAsync(personalityFilePath, 'utf-8');
+            const personalityContent = await fs.readFile(personalityFilePath, 'utf-8');
 
             // Crear el prompt para la IA
             const prompt = `

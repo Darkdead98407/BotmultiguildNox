@@ -1,4 +1,5 @@
 const { Events } = require('discord.js');
+const { hasPermission } = require('../utils/permissionsManager');
 
 module.exports = {
     name: Events.InteractionCreate,
@@ -7,11 +8,19 @@ module.exports = {
         if (!interaction.isStringSelectMenu() || interaction.customId !== 'select-color') return;
 
         // Verificar si la interacción es en el canal correcto
-        const canalDesignado = '1332149885235101697'; // Reemplaza con el ID del canal designado
+        const canalDesignado = interaction.client.config.channels.colorSelection;
         if (interaction.channelId !== canalDesignado) {
             return interaction.reply({ 
                 content: '❌ Este comando solo puede usarse en el canal designado.',
                 ephemeral: true 
+            });
+        }
+
+        // Verificar permisos del usuario
+        if (!hasPermission(interaction.guild.id, interaction.member, 'colors')) {
+            return interaction.reply({
+                content: '❌ No tienes permiso para usar este comando.',
+                ephemeral: true
             });
         }
 
