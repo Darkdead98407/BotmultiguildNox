@@ -28,19 +28,19 @@ module.exports = {
 
             // Dibujar avatar
             const avatar = await loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }));
-            const avatarSize = 220;
             const avatarX = canvas.width / 4 - 45;
             const avatarY = 140;
+            const avatarRadius = 220;
 
             ctx.save();
             ctx.beginPath();
-            ctx.arc(avatarX + avatarSize, avatarY + avatarSize, avatarSize, 0, Math.PI * 2);
+            ctx.arc(avatarX + avatarRadius, avatarY + avatarRadius, avatarRadius, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
-            ctx.drawImage(avatar, avatarX, avatarY, avatarSize * 2, avatarSize * 2);
+            ctx.drawImage(avatar, avatarX, avatarY, avatarRadius * 2, avatarRadius * 2);
             ctx.restore();
 
-            // Crear embed de bienvenida
+            // Crear el embed de bienvenida
             const attachment = new AttachmentBuilder(canvas.toBuffer('image/png'), { name: 'welcome.png' });
             const embed = new EmbedBuilder()
                 .setColor('#0099ff')
