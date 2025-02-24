@@ -41,6 +41,9 @@ client.config = {
         await loadCommands(client);
         await loadEvents(client);
 
+        // Log para verificar listeners de messageCreate
+        console.log(`🔍 Cantidad de listeners para messageCreate: ${client.listenerCount('messageCreate')}`);
+
         if (!process.env.DISCORD_BOT_TOKEN) {
             throw new Error('Token de Discord no encontrado en las variables de entorno');
         }
