@@ -1,0 +1,23 @@
+{
+    "prefix": "!",
+    "token": "YOUR_BOT_TOKEN",
+    "ticketSystem": {
+        "categoryId": "1338906681492635738",
+        "supportRoleId": "1338300969246523402",
+        "logChannelId": "1338906800740896869"
+    },
+    "channels": {
+        "welcome": "1328557870144426048",
+        "memberCount": "1337234406884249732",
+        "verification": "1337257863730696242",
+        "counting": "1335079673285316669"
+    },
+    "roles": {
+        "verified": "1328557869599297590",
+        "user": "1328557869599297590",
+        "admin": "1328557869599297591"
+    },
+    "api": {
+        "googleAI": "AIzaSyDwcuh6d2bWj-dqo4kLwT5Ar2_Z_nLq8cs"
+    }
+}
