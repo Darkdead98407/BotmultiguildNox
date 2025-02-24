@@ -4,7 +4,7 @@ const { loadData, saveData } = require('../utils/fileStorage');
 
 const DISCORD_CLIENT_ID = process.env.BOT_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const CALLBACK_URL = process.env.OAUTH_CALLBACK_URL || 'http://localhost:3000/auth/discord/callback';
+const CALLBACK_URL = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/auth/discord/callback`;
 
 function setupAuth(app) {
     // Configuración de Passport
@@ -46,14 +46,14 @@ function setupAuth(app) {
 
     function hasGuildAccess(req, res, next) {
         if (!req.user) return res.redirect('/auth/discord');
-        
+
         const guildId = req.params.guildId;
         const userGuilds = req.user.guilds || [];
-        
+
         if (userGuilds.some(g => g.id === guildId && (g.permissions & 0x8) === 0x8)) {
             return next();
         }
-        
+
         res.status(403).render('error', {
             message: 'No tienes permiso para acceder a la configuración de este servidor'
         });
@@ -70,8 +70,10 @@ function setupAuth(app) {
     );
 
     app.get('/auth/logout', (req, res) => {
-        req.logout();
-        res.redirect('/');
+        req.logout((err) => {
+            if (err) return next(err);
+            res.redirect('/');
+        });
     });
 
     return {
