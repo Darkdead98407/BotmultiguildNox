@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración del Servidor - <%= guild.name %></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Configuración de <%= guild.name %></h1>
+            <a href="/dashboard" class="text-white hover:text-gray-200">Volver al Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 p-4">
+        <form id="serverConfig" class="space-y-8">
+            <!-- Roles -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Configuración de Roles</h2>
+                <div class="grid gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Rol de Administrador</label>
+                        <select name="roles.admin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">Seleccionar rol</option>
+                            <% guild.roles.cache.forEach(role => { %>
+                                <option value="<%= role.id %>" <%= config.roles.admin === role.id ? 'selected' : '' %>>
+                                    <%= role.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Rol de Desarrollador</label>
+                        <select name="roles.dev" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">Seleccionar rol</option>
+                            <% guild.roles.cache.forEach(role => { %>
+                                <option value="<%= role.id %>" <%= config.roles.dev === role.id ? 'selected' : '' %>>
+                                    <%= role.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Rol de Usuario</label>
+                        <select name="roles.user" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">Seleccionar rol</option>
+                            <% guild.roles.cache.forEach(role => { %>
+                                <option value="<%= role.id %>" <%= config.roles.user === role.id ? 'selected' : '' %>>
+                                    <%= role.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canales -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Configuración de Canales</h2>
+                <div class="grid gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Canal de Bienvenidas</label>
+                        <select name="channels.welcome" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">Seleccionar canal</option>
+                            <% guild.channels.cache.filter(c => c.type === 0).forEach(channel => { %>
+                                <option value="<%= channel.id %>" <%= config.channels.welcome === channel.id ? 'selected' : '' %>>
+                                    <%= channel.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <!-- Repite para cada tipo de canal -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Canal de Conteo</label>
+                        <select name="channels.counting" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <option value="">Seleccionar canal</option>
+                            <% guild.channels.cache.filter(c => c.type === 0).forEach(channel => { %>
+                                <option value="<%= channel.id %>" <%= config.channels.counting === channel.id ? 'selected' : '' %>>
+                                    <%= channel.name %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <!-- Continúa con los demás canales -->
+                </div>
+            </div>
+
+            <!-- Categorías de Autores -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Categorías de Autores</h2>
+                <div class="grid gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Roles de Colores</label>
+                        <div class="space-y-2">
+                            <% guild.roles.cache.filter(role => role.name.toLowerCase().includes('color')).forEach(role => { %>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="authorCategories.colors" 
+                                           value="<%= role.id %>"
+                                           <%= config.authorCategories.colors.includes(role.id) ? 'checked' : '' %>
+                                           class="rounded border-gray-300 text-blue-600 shadow-sm">
+                                    <span class="ml-2"><%= role.name %></span>
+                                </label>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Guardar Configuración
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById('serverConfig').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                const keys = key.split('.');
+                let current = data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current[keys[i]] = current[keys[i]] || {};
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = value;
+            });
+
+            try {
+                const response = await fetch('/api/settings/<%= guild.id %>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Configuración guardada correctamente');
+                } else {
+                    alert('Error al guardar la configuración');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar la configuración');
+            }
+        });
+    </script>
+</body>
+</html>

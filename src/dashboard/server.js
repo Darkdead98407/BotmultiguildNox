@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { loadData, saveData } = require('../utils/fileStorage');
+const { getServerConfig, updateServerConfig } = require('../utils/serverConfig');
 
 function setupDashboard(client) {
     const app = express();
@@ -60,21 +61,25 @@ function setupDashboard(client) {
         res.render('dashboard', { guilds });
     });
 
+    // Configuración del servidor
+    app.get('/dashboard/server/:guildId', async (req, res) => {
+        const { guildId } = req.params;
+        const guild = client.guilds.cache.get(guildId);
+
+        if (!guild) {
+            return res.redirect('/dashboard');
+        }
+
+        const config = await getServerConfig(guildId);
+        res.render('server-config', { guild, config });
+    });
+
     // API para guardar configuración
     app.post('/api/settings/:guildId', async (req, res) => {
         try {
             const { guildId } = req.params;
-            const settings = await loadData('botSettings.json', {
-                guildsSettings: {}
-            });
-
-            settings.guildsSettings[guildId] = {
-                ...settings.guildsSettings[guildId],
-                ...req.body
-            };
-
-            await saveData('botSettings.json', settings);
-            res.json({ success: true });
+            const updatedConfig = await updateServerConfig(guildId, req.body);
+            res.json({ success: true, config: updatedConfig });
         } catch (error) {
             console.error('Error saving settings:', error);
             res.status(500).json({ error: 'Error saving settings' });

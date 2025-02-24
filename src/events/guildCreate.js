@@ -6,7 +6,7 @@ module.exports = {
     async execute(guild) {
         try {
             console.log(`🎉 Bot añadido a nuevo servidor: ${guild.name}`);
-            
+
             // Cargar configuración actual
             const settings = await loadData('botSettings.json', {
                 guildsSettings: {}
@@ -17,19 +17,26 @@ module.exports = {
                 name: guild.name,
                 id: guild.id,
                 joinedAt: new Date().toISOString(),
-                prefix: '!',
-                welcomeChannel: null,
-                logChannel: null,
-                moderationEnabled: false,
-                automodSettings: {
-                    enabled: false,
-                    antiSpam: true,
-                    antiFlood: true,
-                    maxMentions: 5
+                roles: {
+                    admin: null,
+                    dev: null,
+                    user: null
                 },
-                permissions: {
-                    adminRoles: [],
-                    modRoles: []
+                channels: {
+                    welcome: null,
+                    counting: null,
+                    tickets: null,
+                    commands: null,
+                    minigames: null,
+                    ai: null,
+                    verification: null,
+                    authors: null,
+                    nsfw: null
+                },
+                authorCategories: {
+                    colors: [],
+                    platform: ['Java', 'Bedrock'],
+                    age: ['18+', '-18']
                 }
             };
 
