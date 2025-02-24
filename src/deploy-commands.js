@@ -14,32 +14,52 @@ async function deployCommands() {
             const folderPath = path.join(commandsPath, folder);
             const commandFiles = (await fs.readdir(folderPath)).filter(file => file.endsWith('.js'));
 
+            console.log(`📁 Procesando carpeta: ${folder}`);
+            let folderCommandCount = 0;
+
             for (const file of commandFiles) {
                 const filePath = path.join(folderPath, file);
                 // Limpiar caché del comando
                 delete require.cache[require.resolve(filePath)];
                 const command = require(filePath);
 
-                if ('data' in command && 'execute' in command) {
-                    commands.push(command.data.toJSON());
-                    console.log(`✅ Comando añadido: ${command.data.name} desde ${folder}/${file}`);
-                } else {
-                    console.warn(`⚠️ El comando en ${filePath} no tiene las propiedades requeridas`);
+                try {
+                    if ('data' in command && 'execute' in command) {
+                        const commandData = command.data.toJSON();
+                        commands.push(commandData);
+                        console.log(`✅ Comando añadido: ${command.data.name} desde ${folder}/${file}`);
+                        folderCommandCount++;
+                    } else {
+                        console.warn(`⚠️ El comando en ${filePath} no tiene las propiedades requeridas`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error al procesar comando ${file}:`, error);
                 }
             }
+
+            console.log(`📊 Total comandos en ${folder}: ${folderCommandCount}`);
         }
 
         const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN);
 
         console.log('🔄 Empezando a actualizar comandos de aplicación (/)...');
+        console.log(`📋 Lista de comandos a registrar:`, commands.map(cmd => cmd.name));
 
-        await rest.put(
-            Routes.applicationCommands(process.env.BOT_CLIENT_ID),
-            { body: commands },
-        );
+        try {
+            await rest.put(
+                Routes.applicationCommands(process.env.BOT_CLIENT_ID),
+                { body: commands },
+            );
 
-        console.log('✅ ¡Comandos de aplicación (/) actualizados exitosamente!');
-        console.log(`📊 Total de comandos registrados: ${commands.length}`);
+            console.log('✅ ¡Comandos de aplicación (/) actualizados exitosamente!');
+            console.log(`📊 Total de comandos registrados: ${commands.length}`);
+            console.log('📋 Comandos registrados:', commands.map(cmd => cmd.name).join(', '));
+        } catch (error) {
+            console.error('❌ Error al registrar comandos en Discord:', error);
+            if (error.code === 50035) {
+                console.error('⚠️ Error de validación de comandos. Revisa la estructura de los comandos.');
+            }
+        }
     } catch (error) {
         console.error('❌ Error al desplegar comandos:', error);
     }

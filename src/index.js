@@ -33,6 +33,7 @@ client.config = {
         Object.keys(require.cache).forEach(key => {
             if (key.includes(join(__dirname, 'commands')) || 
                 key.includes(join(__dirname, 'events'))) {
+                console.log('🧹 Limpiando caché para:', key);
                 delete require.cache[key];
             }
         });
@@ -42,7 +43,7 @@ client.config = {
         await loadEvents(client);
 
         // Log para verificar listeners de messageCreate
-        console.log(`🔍 Cantidad de listeners para messageCreate: ${client.listenerCount('messageCreate')}`);
+        console.log(`🔍 Cantidad de listeners para messageCreate antes de iniciar: ${client.listenerCount('messageCreate')}`);
 
         if (!process.env.DISCORD_BOT_TOKEN) {
             throw new Error('Token de Discord no encontrado en las variables de entorno');
@@ -51,6 +52,7 @@ client.config = {
         // Iniciar sesión
         await client.login(process.env.DISCORD_BOT_TOKEN);
         console.log('Bot iniciado correctamente!');
+        console.log(`🔍 Cantidad de listeners para messageCreate después de iniciar: ${client.listenerCount('messageCreate')}`);
 
         // Ejecutar deploy-commands.js para registrar comandos slash
         require('./deploy-commands.js');

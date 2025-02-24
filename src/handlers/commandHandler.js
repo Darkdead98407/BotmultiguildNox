@@ -43,6 +43,7 @@ async function loadCommands(client) {
     }
 
     console.log(`📊 Total de comandos cargados: ${loadedCommands.size}`);
+    console.log('📋 Lista de comandos:', Array.from(loadedCommands).join(', '));
 }
 
 module.exports = { loadCommands };

@@ -8,16 +8,27 @@ const animeActions = require('anime-actions');
 module.exports = {
     name: Events.MessageCreate,
     async execute(message) {
+        console.log(`📝 [DEBUG] MessageCreate ejecutado para mensaje ID: ${message.id}`);
+        console.log(`📝 [DEBUG] Canal: ${message.channel.name}, Autor: ${message.author.tag}`);
+        console.trace('📝 [DEBUG] Traza de ejecución de messageCreate');
+
         // Ignorar mensajes de bots
-        if (message.author.bot) return;
+        if (message.author.bot) {
+            console.log(`📝 [DEBUG] Mensaje ignorado: es de un bot`);
+            return;
+        }
 
         // Obtener configuración del servidor
         const guildId = message.guild?.id;
-        if (!guildId) return;
+        if (!guildId) {
+            console.log(`📝 [DEBUG] Mensaje ignorado: no es de un servidor`);
+            return;
+        }
 
         try {
             // Emitir evento para el sistema de conteo si el mensaje está en el canal correcto
             if (message.channel.id === message.client.config.channels?.counting) {
+                console.log(`📝 [DEBUG] Emitiendo evento CountingMessage`);
                 message.client.emit('CountingMessage', message);
                 return; // No procesar más el mensaje si es del canal de conteo
             }
@@ -26,6 +37,7 @@ module.exports = {
 
             // Manejar chat AI si está en el canal designado
             if (guildConfig?.chatChannel && message.channel.id === guildConfig.chatChannel) {
+                console.log(`📝 [DEBUG] Procesando mensaje en canal de chat AI`);
                 try {
                     const MODEL = "gemini-pro";
                     const API_KEY = message.client.config.api.googleAI;
@@ -61,8 +73,12 @@ module.exports = {
 
             // Manejar comandos con prefijo
             const prefix = message.client.config.prefix;
-            if (!message.content.startsWith(prefix)) return;
+            if (!message.content.startsWith(prefix)) {
+                console.log(`📝 [DEBUG] Mensaje ignorado: no comienza con prefijo`);
+                return;
+            }
 
+            console.log(`📝 [DEBUG] Procesando comando con prefijo`);
             const args = message.content.slice(prefix.length).trim().split(/ +/);
             const commandName = args.shift().toLowerCase();
 
@@ -70,6 +86,7 @@ module.exports = {
             const animeCommands = ['hug', 'kiss', 'pat', 'punch', 'slap', 'bite', 'bonk', 'cry', 'dance', 'help'];
 
             if (commandName === 'help') {
+                console.log(`📝 [DEBUG] Ejecutando comando help`);
                 const embed = new EmbedBuilder()
                     .setColor('#FF69B4')
                     .setTitle('🎭 Comandos de Anime Disponibles')
@@ -92,6 +109,7 @@ module.exports = {
             }
 
             if (animeCommands.includes(commandName)) {
+                console.log(`📝 [DEBUG] Ejecutando comando de anime: ${commandName}`);
                 try {
                     let url;
                     const target = message.mentions.users.first();
@@ -129,6 +147,8 @@ module.exports = {
         } catch (error) {
             console.error('Error en messageCreate:', error);
         }
+
+        console.log(`📝 [DEBUG] Fin de procesamiento de messageCreate para mensaje ID: ${message.id}`);
     }
 };
 

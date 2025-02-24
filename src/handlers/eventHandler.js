@@ -2,8 +2,21 @@ const fs = require('fs').promises;
 const path = require('path');
 
 async function loadEvents(client) {
+    // Asegurar que solo se carguen eventos de src/events
     const eventsPath = path.join(__dirname, '../events');
-    const eventFiles = (await fs.readdir(eventsPath)).filter(file => file.endsWith('.js'));
+
+    // Verificar que el directorio existe
+    try {
+        await fs.access(eventsPath);
+    } catch (error) {
+        console.error('❌ Error: El directorio de eventos no existe:', eventsPath);
+        return;
+    }
+
+    // Obtener solo archivos .js del directorio de eventos
+    const eventFiles = (await fs.readdir(eventsPath))
+        .filter(file => file.endsWith('.js'))
+        .filter(file => !file.includes('.test.') && !file.includes('.spec.')); // Excluir archivos de prueba
 
     // Limpiar todos los eventos existentes
     const events = client.eventNames();
@@ -22,6 +35,12 @@ async function loadEvents(client) {
     for (const file of eventFiles) {
         const filePath = path.join(eventsPath, file);
 
+        // Verificar que el archivo existe y está en el directorio correcto
+        if (!filePath.startsWith(eventsPath)) {
+            console.warn(`⚠️ Intento de carga de evento fuera del directorio de eventos: ${filePath}`);
+            continue;
+        }
+
         // Limpiar caché del módulo
         delete require.cache[require.resolve(filePath)];
 
@@ -31,6 +50,12 @@ async function loadEvents(client) {
                 eventName: event.name,
                 filePath: filePath
             });
+
+            // Validar estructura del evento
+            if (!event.name || typeof event.execute !== 'function') {
+                console.warn(`⚠️ Archivo de evento inválido: ${file}, se requiere name y execute`);
+                continue;
+            }
 
             // Verificar si el evento ya está registrado
             if (loadedEvents.has(event.name)) {
