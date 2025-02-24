@@ -2,8 +2,10 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const passport = require('passport');
 const { loadData, saveData } = require('../utils/fileStorage');
 const { getServerConfig, updateServerConfig } = require('../utils/serverConfig');
+const { setupAuth } = require('./auth');
 
 function setupDashboard(client) {
     const app = express();
@@ -16,7 +18,7 @@ function setupDashboard(client) {
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
 
-    // Configurar sesión usando archivo JSON
+    // Configurar sesión
     app.use(session({
         secret: process.env.SESSION_SECRET || 'your-secret-key',
         resave: false,
@@ -27,6 +29,13 @@ function setupDashboard(client) {
         }
     }));
 
+    // Configurar Passport
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    // Configurar autenticación
+    const { isAuthenticated, hasGuildAccess } = setupAuth(app);
+
     // Middleware para pasar client a todas las rutas
     app.use((req, res, next) => {
         req.client = client;
@@ -34,35 +43,42 @@ function setupDashboard(client) {
     });
 
     // Rutas
-    app.get('/', async (req, res) => {
-        const settings = await loadData('botSettings.json', {
-            guildsSettings: {}
-        });
-
+    app.get('/', (req, res) => {
         res.render('index', {
             guilds: client.guilds.cache.size,
             users: client.users.cache.size,
             botName: client.user.username,
-            settings
+            user: req.user
         });
     });
 
-    // Panel de control
-    app.get('/dashboard', async (req, res) => {
-        const settings = await loadData('botSettings.json', {
-            guildsSettings: {}
-        });
+    // Panel de control (protegido)
+    app.get('/dashboard', isAuthenticated, async (req, res) => {
+        // Filtrar solo los servidores donde el usuario es administrador
+        const userGuilds = req.user.guilds || [];
+        const adminGuilds = userGuilds.filter(g => (g.permissions & 0x8) === 0x8);
 
-        const guilds = Array.from(client.guilds.cache.values()).map(guild => ({
-            ...guild,
-            settings: settings.guildsSettings[guild.id] || {}
+        // Obtener configuración de cada servidor
+        const guildsWithConfig = await Promise.all(adminGuilds.map(async guild => {
+            const config = await getServerConfig(guild.id);
+            const discordGuild = client.guilds.cache.get(guild.id);
+            return {
+                ...guild,
+                config,
+                // Agregar información adicional del bot si está en el servidor
+                botIn: !!discordGuild,
+                memberCount: discordGuild?.memberCount
+            };
         }));
 
-        res.render('dashboard', { guilds });
+        res.render('dashboard', { 
+            guilds: guildsWithConfig,
+            user: req.user
+        });
     });
 
-    // Configuración del servidor
-    app.get('/dashboard/server/:guildId', async (req, res) => {
+    // Configuración del servidor (protegida)
+    app.get('/dashboard/server/:guildId', isAuthenticated, hasGuildAccess, async (req, res) => {
         const { guildId } = req.params;
         const guild = client.guilds.cache.get(guildId);
 
@@ -71,11 +87,15 @@ function setupDashboard(client) {
         }
 
         const config = await getServerConfig(guildId);
-        res.render('server-config', { guild, config });
+        res.render('server-config', { 
+            guild,
+            config,
+            user: req.user
+        });
     });
 
-    // API para guardar configuración
-    app.post('/api/settings/:guildId', async (req, res) => {
+    // API para guardar configuración (protegida)
+    app.post('/api/settings/:guildId', isAuthenticated, hasGuildAccess, async (req, res) => {
         try {
             const { guildId } = req.params;
             const updatedConfig = await updateServerConfig(guildId, req.body);
