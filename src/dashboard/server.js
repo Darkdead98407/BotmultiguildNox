@@ -81,10 +81,9 @@ function setupDashboard(client) {
         }
     });
 
-    // Iniciar servidor
-    const PORT = process.env.DASHBOARD_PORT || 5000;
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`🌐 Panel de control web iniciado en el puerto ${PORT}`);
+    // Dejar que el panel del servidor maneje el puerto
+    app.listen(process.env.PORT || 3000, () => {
+        console.log(`🌐 Panel de control web iniciado`);
     });
 
     return app;
