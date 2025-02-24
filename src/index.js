@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const config = require('../config.json');
 const { loadCommands } = require('./handlers/commandHandler');
 const { loadEvents } = require('./handlers/eventHandler');
+const { join } = require('path');
 
 const client = new Client({
     intents: [
@@ -15,18 +16,28 @@ const client = new Client({
     ]
 });
 
+// Inicializar colecciones
 client.commands = new Collection();
-client.events = new Collection();
 client.config = {
     ...config,
     token: process.env.DISCORD_BOT_TOKEN,
     clientId: process.env.BOT_CLIENT_ID
 };
 
-// Initialize handlers
+// Limpiar caché y recargar handlers
 (async () => {
     try {
         console.log('Iniciando bot...');
+
+        // Limpiar caché de comandos y eventos
+        Object.keys(require.cache).forEach(key => {
+            if (key.includes(join(__dirname, 'commands')) || 
+                key.includes(join(__dirname, 'events'))) {
+                delete require.cache[key];
+            }
+        });
+
+        // Cargar comandos y eventos
         await loadCommands(client);
         await loadEvents(client);
 
@@ -34,13 +45,18 @@ client.config = {
             throw new Error('Token de Discord no encontrado en las variables de entorno');
         }
 
+        // Iniciar sesión
         await client.login(process.env.DISCORD_BOT_TOKEN);
         console.log('Bot iniciado correctamente!');
+
+        // Ejecutar deploy-commands.js para registrar comandos slash
+        require('./deploy-commands.js');
     } catch (error) {
         console.error('Error al inicializar el bot:', error);
     }
 })();
 
+// Manejo de errores
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
 });

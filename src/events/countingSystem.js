@@ -13,7 +13,7 @@ const countingData = {
 };
 
 module.exports = {
-    name: Events.MessageCreate,
+    name: 'CountingMessage', // Cambiado para evitar conflicto con MessageCreate
     async execute(message) {
         // Check if message is in counting channel
         if (message.channel.id !== message.client.config.channels.counting) return;
