@@ -1,6 +1,5 @@
 {
     "prefix": "!",
-    "token": "YOUR_BOT_TOKEN",
     "ticketSystem": {
         "categoryId": "1338906681492635738",
         "supportRoleId": "1338300969246523402",
@@ -10,7 +9,8 @@
         "welcome": "1328557870144426048",
         "memberCount": "1337234406884249732",
         "verification": "1337257863730696242",
-        "counting": "1335079673285316669"
+        "counting": "1335079673285316669",
+        "colorSelection": "1332149885235101697"
     },
     "roles": {
         "verified": "1328557869599297590",

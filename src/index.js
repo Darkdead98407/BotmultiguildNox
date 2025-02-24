@@ -10,14 +10,18 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildPresences,
-        GatewayIntentBits.GuildMessageReactions, // Necesario para reacciones
-        GatewayIntentBits.GuildVoiceStates      // Para futuros comandos de voz
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildVoiceStates
     ]
 });
 
 client.commands = new Collection();
 client.events = new Collection();
-client.config = config;
+client.config = {
+    ...config,
+    token: process.env.DISCORD_BOT_TOKEN,
+    clientId: process.env.BOT_CLIENT_ID
+};
 
 // Initialize handlers
 (async () => {
@@ -26,11 +30,11 @@ client.config = config;
         await loadCommands(client);
         await loadEvents(client);
 
-        if (!config.token) {
-            throw new Error('Token no encontrado en config.json');
+        if (!process.env.DISCORD_BOT_TOKEN) {
+            throw new Error('Token de Discord no encontrado en las variables de entorno');
         }
 
-        await client.login(config.token);
+        await client.login(process.env.DISCORD_BOT_TOKEN);
         console.log('Bot iniciado correctamente!');
     } catch (error) {
         console.error('Error al inicializar el bot:', error);
@@ -41,7 +45,6 @@ process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
 });
 
-// Manejo de errores global
 process.on('uncaughtException', error => {
     console.error('Uncaught exception:', error);
 });
