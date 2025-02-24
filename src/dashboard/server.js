@@ -71,7 +71,7 @@ function setupDashboard(client) {
             };
         }));
 
-        res.render('dashboard', { 
+        res.render('dashboard', {
             guilds: guildsWithConfig,
             user: req.user
         });
@@ -87,7 +87,7 @@ function setupDashboard(client) {
         }
 
         const config = await getServerConfig(guildId);
-        res.render('server-config', { 
+        res.render('server-config', {
             guild,
             config,
             user: req.user
@@ -107,8 +107,9 @@ function setupDashboard(client) {
     });
 
     // Dejar que el panel del servidor maneje el puerto
-    app.listen(process.env.PORT || 3000, () => {
-        console.log(`🌐 Panel de control web iniciado`);
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🌐 Panel de control web iniciado en el puerto ${PORT}`);
     });
 
     return app;
