@@ -1,8 +1,8 @@
 const express = require('express');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const { loadData, saveData } = require('../utils/fileStorage');
 
 function setupDashboard(client) {
     const app = express();
@@ -15,16 +15,8 @@ function setupDashboard(client) {
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
 
-    // Crear directorio data si no existe
-    const dataDir = path.join(__dirname, '../data');
-    require('fs').mkdirSync(dataDir, { recursive: true });
-
-    // Configurar sesión
+    // Configurar sesión usando archivo JSON
     app.use(session({
-        store: new SQLiteStore({
-            db: 'sessions.db',
-            dir: dataDir
-        }),
         secret: process.env.SESSION_SECRET || 'your-secret-key',
         resave: false,
         saveUninitialized: false,
@@ -41,24 +33,52 @@ function setupDashboard(client) {
     });
 
     // Rutas
-    app.get('/', (req, res) => {
+    app.get('/', async (req, res) => {
+        const settings = await loadData('botSettings.json', {
+            guildsSettings: {}
+        });
+
         res.render('index', {
             guilds: client.guilds.cache.size,
             users: client.users.cache.size,
-            botName: client.user.username
+            botName: client.user.username,
+            settings
         });
-    });
-
-    // Ruta de autenticación con Discord
-    app.get('/auth/discord', (req, res) => {
-        res.send('Autenticación con Discord pendiente de implementar');
     });
 
     // Panel de control
-    app.get('/dashboard', (req, res) => {
-        res.render('dashboard', {
-            guilds: Array.from(client.guilds.cache.values())
+    app.get('/dashboard', async (req, res) => {
+        const settings = await loadData('botSettings.json', {
+            guildsSettings: {}
         });
+
+        const guilds = Array.from(client.guilds.cache.values()).map(guild => ({
+            ...guild,
+            settings: settings.guildsSettings[guild.id] || {}
+        }));
+
+        res.render('dashboard', { guilds });
+    });
+
+    // API para guardar configuración
+    app.post('/api/settings/:guildId', async (req, res) => {
+        try {
+            const { guildId } = req.params;
+            const settings = await loadData('botSettings.json', {
+                guildsSettings: {}
+            });
+
+            settings.guildsSettings[guildId] = {
+                ...settings.guildsSettings[guildId],
+                ...req.body
+            };
+
+            await saveData('botSettings.json', settings);
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            res.status(500).json({ error: 'Error saving settings' });
+        }
     });
 
     // Iniciar servidor
