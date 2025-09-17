@@ -6,6 +6,7 @@ const passport = require('passport');
 const { loadData, saveData } = require('../utils/fileStorage');
 const { getServerConfig, updateServerConfig } = require('../utils/serverConfig');
 const { setupAuth } = require('./auth');
+require('dotenv').config();
 
 function setupDashboard(client) {
     const app = express();
@@ -20,7 +21,7 @@ function setupDashboard(client) {
 
     // Configurar sesión
     app.use(session({
-        secret: process.env.SESSION_SECRET || 'your-secret-key',
+        secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -34,7 +35,7 @@ function setupDashboard(client) {
     app.use(passport.session());
 
     // Configurar autenticación
-    const { isAuthenticated, hasGuildAccess } = setupAuth(app);
+    const { isAuthenticated, hasGuildAccess } = setupAuth(app, process.env.CLIENTID);
 
     // Middleware para pasar client a todas las rutas
     app.use((req, res, next) => {
@@ -107,7 +108,7 @@ function setupDashboard(client) {
     });
 
     // Dejar que el panel del servidor maneje el puerto
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT;
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🌐 Panel de control web iniciado en el puerto ${PORT}`);
     });

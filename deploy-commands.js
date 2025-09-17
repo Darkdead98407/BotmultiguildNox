@@ -1,6 +1,7 @@
 const { REST, Routes } = require('discord.js');
 const fs = require('fs').promises;
 const path = require('path');
+require('dotenv').config();
 
 async function deployCommands() {
     try {
@@ -14,8 +15,6 @@ async function deployCommands() {
             const folderPath = path.join(commandsPath, folder);
             const commandFiles = (await fs.readdir(folderPath)).filter(file => file.endsWith('.js'));
 
-            console.log(`📁 Procesando carpeta: ${folder}`);
-            let folderCommandCount = 0;
 
             for (const file of commandFiles) {
                 const filePath = path.join(folderPath, file);
@@ -26,15 +25,7 @@ async function deployCommands() {
 
                     if ('data' in command && 'execute' in command) {
                         const commandData = command.data.toJSON();
-                        console.log(`🔍 Validando comando ${command.data.name}:`, {
-                            name: commandData.name,
-                            description: commandData.description,
-                            options: commandData.options,
-                            type: commandData.type
-                        });
                         commands.push(commandData);
-                        console.log(`✅ Comando añadido: ${command.data.name} desde ${folder}/${file}`);
-                        folderCommandCount++;
                     } else {
                         console.warn(`⚠️ El comando en ${filePath} no tiene las propiedades requeridas`);
                     }
@@ -43,35 +34,20 @@ async function deployCommands() {
                 }
             }
 
-            console.log(`📊 Total comandos en ${folder}: ${folderCommandCount}`);
         }
 
-        const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN);
+        const rest = new REST().setToken(process.env.TOKEN);
 
         console.log('🔄 Empezando a actualizar comandos de aplicación (/)...');
-        console.log(`📋 Lista de comandos a registrar:`, commands.map(cmd => ({
-            name: cmd.name,
-            description: cmd.description,
-            options: cmd.options?.length || 0
-        })));
 
         try {
-            // Registrar comandos en el servidor de prueba primero
-            const testGuildId = '1328557869599297587'; // ID del servidor de prueba
             await rest.put(
-                Routes.applicationGuildCommands(process.env.BOT_CLIENT_ID, testGuildId),
-                { body: commands },
-            );
-
-            // Registrar comandos globalmente después
-            await rest.put(
-                Routes.applicationCommands(process.env.BOT_CLIENT_ID),
+                Routes.applicationCommands(process.env.CLIENTID),
                 { body: commands },
             );
 
             console.log('✅ ¡Comandos de aplicación (/) actualizados exitosamente!');
             console.log(`📊 Total de comandos registrados: ${commands.length}`);
-            console.log('📋 Comandos registrados:', commands.map(cmd => cmd.name).join(', '));
         } catch (error) {
             console.error('❌ Error al registrar comandos en Discord:', error);
             if (error.code === 50035) {

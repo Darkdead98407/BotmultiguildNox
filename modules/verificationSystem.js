@@ -5,18 +5,13 @@ const {
     ButtonStyle 
 } = require('discord.js');
 
-module.exports = {
-    name: 'verificationSystem',
-    async handleButton(interaction, action, params) {
-        const config = interaction.client.config;
-
-        if (action === 'start') {
-            await startVerification(interaction);
-        } else if (action === 'answer') {
-            await checkAnswer(interaction, params[0]);
-        }
+async function handleButton(interaction, action, params) {
+    if (action === 'start') {
+        await startVerification(interaction);
+    } else if (action === 'answer') {
+        await checkAnswer(interaction, params[0]);
     }
-};
+}
 
 async function startVerification(interaction) {
     const embed = new EmbedBuilder()
@@ -87,3 +82,9 @@ async function checkAnswer(interaction, answer) {
         });
     }
 }
+
+module.exports = {
+    handleButton,
+    startVerification,
+    checkAnswer,
+};

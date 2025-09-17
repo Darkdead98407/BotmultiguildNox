@@ -1,10 +1,11 @@
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const { loadData, saveData } = require('../utils/fileStorage');
+require('dotenv').config();
 
-const DISCORD_CLIENT_ID = process.env.BOT_CLIENT_ID;
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
-const CALLBACK_URL = process.env.OAUTH_CALLBACK_URL || `/auth/discord/callback`;
+const CLIENTID = process.env.CLIENTID;
+const SECRET = process.env.SECRET;
+const CALLBACK = process.env.CALLBACK;
 
 function setupAuth(app) {
     // Configuración de Passport
@@ -13,9 +14,9 @@ function setupAuth(app) {
 
     // Estrategia de Discord
     passport.use(new DiscordStrategy({
-        clientID: DISCORD_CLIENT_ID,
-        clientSecret: DISCORD_CLIENT_SECRET,
-        callbackURL: CALLBACK_URL,
+        clientID: CLIENTID,
+        clientSecret: SECRET,
+        callbackURL: CALLBACK,
         scope: ['identify', 'guilds']
     }, async (accessToken, refreshToken, profile, done) => {
         try {

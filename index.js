@@ -1,10 +1,10 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const config = require('../config.json');
 const { loadCommands } = require('./handlers/commandHandler');
 const { loadEvents } = require('./handlers/eventHandler');
 const { join } = require('path');
 const { deployCommands } = require('./deploy-commands');
 const { setupDashboard } = require('./dashboard/server');
+require('dotenv').config();
 
 const client = new Client({
     intents: [
@@ -21,9 +21,8 @@ const client = new Client({
 // Inicializar colecciones
 client.commands = new Collection();
 client.config = {
-    ...config,
-    token: process.env.DISCORD_BOT_TOKEN || config.token,
-    clientId: process.env.BOT_CLIENT_ID || config.clientId
+    token: process.env.TOKEN,
+    clientId: process.env.CLIENTID
 };
 
 // Función principal de inicio
@@ -31,31 +30,21 @@ async function startBot() {
     try {
         console.log('🚀 Iniciando bot...');
 
-        // Limpiar caché de comandos y eventos
-        Object.keys(require.cache).forEach(key => {
-            if (key.includes(join(__dirname, 'commands')) || 
-                key.includes(join(__dirname, 'events'))) {
-                delete require.cache[key];
-            }
-        });
-
-        // Cargar comandos y eventos
+       // Cargar comandos y eventos
         await loadCommands(client);
         await loadEvents(client);
 
         // Verificar token
-        if (!process.env.DISCORD_BOT_TOKEN && !config.token) {
+        if (!process.env.TOKEN) {
             throw new Error('No se encontró el token del bot en las variables de entorno ni en config.json');
         }
 
         // Iniciar sesión
-        await client.login(process.env.DISCORD_BOT_TOKEN || config.token);
-        console.log('✅ Bot iniciado correctamente!');
-
-        // Registrar comandos slash
-        console.log('🔄 Registrando comandos slash...');
+        await client.login(process.env.TOKEN);
+        console.log(`✅ Bot iniciado como ${client.user.tag}`);
+ 
         await deployCommands();
-        console.log('✅ Comandos slash registrados');
+
 
         // Iniciar panel de control web
         setupDashboard(client);

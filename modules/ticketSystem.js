@@ -8,9 +8,7 @@ const {
 
 const ticketData = new Map();
 
-module.exports = {
-    name: 'ticketSystem',
-    async handleButton(interaction, action, params) {
+    async function handleButton(interaction, action, params) {
         const config = interaction.client.config.ticketSystem;
 
         switch (action) {
@@ -24,8 +22,7 @@ module.exports = {
                 await closeTicket(interaction, config);
                 break;
         }
-    }
-};
+    };
 
 async function createTicket(interaction, config) {
     const existingTicket = interaction.guild.channels.cache.find(
@@ -49,58 +46,43 @@ async function createTicket(interaction, config) {
             },
             {
                 id: interaction.user.id,
-                allow: [
-                    PermissionFlagsBits.ViewChannel,
-                    PermissionFlagsBits.SendMessages,
-                    PermissionFlagsBits.ReadMessageHistory
-                ]
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
             },
             {
-                id: config.supportRoleId,
-                allow: [
-                    PermissionFlagsBits.ViewChannel,
-                    PermissionFlagsBits.SendMessages,
-                    PermissionFlagsBits.ReadMessageHistory
-                ]
+                id: interaction.guild.roles.cache.get(config.supportRoleId),
+                allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
             }
-        ]
-    });
-
-    const embed = new EmbedBuilder()
-        .setTitle('Ticket de Soporte')
-        .setDescription('Utiliza los botones para gestionar este ticket.')
-        .setColor('#0099ff')
-        .setFooter({
-            text: `Ticket abierto por ${interaction.user.tag}`
-        })
-        .setTimestamp();
-
-    const buttons = new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId('ticket_claim')
-                .setLabel('Reclamar Ticket')
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setCustomId('ticket_close')
-                .setLabel('Cerrar Ticket')
-                .setStyle(ButtonStyle.Danger)
-        );
-
-    const message = await channel.send({
-        content: `<@${interaction.user.id}>`,
-        embeds: [embed],
-        components: [buttons]
+        ],
     });
 
     ticketData.set(channel.id, {
         opener: interaction.user.id,
-        messageId: message.id,
-        createdAt: Date.now()
+        claimedBy: null,
+        claimedAt: null,
     });
 
+    const closeButton = new ButtonBuilder()
+        .setCustomId('ticket_close')
+        .setLabel('Cerrar Ticket')
+        .setStyle(ButtonStyle.Danger);
+
+    const claimButton = new ButtonBuilder()
+        .setCustomId('ticket_claim')
+        .setLabel('Reclamar Ticket')
+        .setStyle(ButtonStyle.Secondary);
+
+    const row = new ActionRowBuilder().addComponents(claimButton, closeButton);
+
+    const embed = new EmbedBuilder()
+        .setTitle('Nuevo Ticket')
+        .setDescription('Un nuevo ticket ha sido creado. Espera a que un miembro del staff te atienda.')
+        .addFields({ name: 'Usuario', value: `${interaction.user}` })
+        .setColor('#00AE86');
+
+    await channel.send({ embeds: [embed], components: [row] });
+
     await interaction.reply({
-        content: `Ticket creado: ${channel}`,
+        content: `✅ Se ha creado tu ticket en ${channel}.`,
         ephemeral: true
     });
 }
@@ -108,7 +90,7 @@ async function createTicket(interaction, config) {
 async function claimTicket(interaction, config) {
     if (!interaction.member.roles.cache.has(config.supportRoleId)) {
         return interaction.reply({
-            content: 'No tienes permiso para reclamar tickets.',
+            content: '❌ No tienes permiso para reclamar tickets.',
             ephemeral: true
         });
     }
@@ -149,9 +131,12 @@ async function closeTicket(interaction, config) {
     }
 
     await interaction.reply('El ticket se cerrará en 5 segundos...');
-    setTimeout(() => {
-        interaction.channel.delete()
-            .catch(console.error);
-        ticketData.delete(interaction.channel.id);
-    }, 5000);
+    setTimeout(() => interaction.channel.delete(), 5000);
 }
+
+module.exports = {
+    handleButton,
+    createTicket,
+    claimTicket,
+    closeTicket,
+};
